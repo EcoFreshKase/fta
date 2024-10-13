@@ -3,6 +3,7 @@
 const { execSync, spawn } = require("node:child_process");
 const path = require("node:path");
 const fs = require("node:fs");
+const { analyze_file_wasm } = require("fta-wasm");
 
 const platform = process.platform;
 const architecture = process.arch;
@@ -82,13 +83,16 @@ function runFta(project, options) {
 // Run the binary directly if executed as a standalone script
 // Arguments are directly forwarded to the binary
 if (require.main === module) {
-  const args = process.argv.slice(2); // Exclude the first two arguments (node binary and project path)
-  const binaryPath = getBinaryPath();
-  const binaryArgs = args.join(" ");
-  setUnixPerms(binaryPath);
+  const fileContent = fs.readFileSync(path.resolve("check.js"), "utf8");
+  const analyzedFile = analyze_file_wasm(fileContent, false, false);
+  console.log(analyzedFile);
+  // const args = process.argv.slice(2); // Exclude the first two arguments (node binary and project path)
+  // const binaryPath = getBinaryPath();
+  // const binaryArgs = args.join(" ");
+  // setUnixPerms(binaryPath);
 
-  // Standard output will be printed due to use of `inherit`, i.e, no need to `console.log` anything
-  execSync(`${binaryPath} ${binaryArgs}`, { stdio: "inherit" });
+  // // Standard output will be printed due to use of `inherit`, i.e, no need to `console.log` anything
+  // execSync(`${binaryPath} ${binaryArgs}`, { stdio: "inherit" });
 }
 
 module.exports.runFta = runFta;
